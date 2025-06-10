@@ -8,12 +8,10 @@ const middlewares = jsonServer.defaults({
 
 // Configuration CORS améliorée
 server.use(cors({
-  origin: '*', // Permettre temporairement toutes les origines
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  origin: ['https://mon-app-frontend.vercel.app', 'http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  credentials: true,
-  optionsSuccessStatus: 200
+  credentials: true
 }));
 
 // Middleware pour logger les requêtes
