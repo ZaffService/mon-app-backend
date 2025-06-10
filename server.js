@@ -8,7 +8,7 @@ const middlewares = jsonServer.defaults({
 
 // Configuration CORS améliorée
 server.use(cors({
-  origin: '*',
+  origin: ['https://mon-app-frontend.vercel.app', 'http://localhost:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -21,16 +21,18 @@ server.use((req, res, next) => {
   next();
 });
 
-// Route racine pour vérifier que le serveur fonctionne
+// Route racine
 server.get('/', (req, res) => {
   res.json({ message: 'API is running' });
 });
 
 server.use(middlewares);
-server.use('/api', router); // Préfixe toutes les routes de l'API avec /api
 
-// Route pour les chats
-server.get('/chats', (req, res) => {
+// Routes API
+server.use('/api', router);
+
+// Route explicite pour les chats
+server.get('/api/chats', (req, res) => {
   const db = router.db;
   res.json(db.get('chats').value() || []);
 });
