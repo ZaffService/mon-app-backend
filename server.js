@@ -4,28 +4,16 @@ const server = jsonServer.create();
 const router = jsonServer.router('db.json');
 const middlewares = jsonServer.defaults();
 
-// Configuration de base
+// Middleware de base
 server.use(middlewares);
 
-// Configuration CORS spécifique
-server.use(cors({
-  origin: ['https://mon-app-frontend.vercel.app', 'http://localhost:5173'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  credentials: true
-}));
+// Configuration CORS
+server.use(cors());
 
-// Middleware pour parser le body
-server.use(jsonServer.bodyParser);
-
-// Route de test pour vérifier que le serveur fonctionne
-server.get('/', (req, res) => {
-  res.json({ message: 'API is running' });
-});
-
-// Routes de l'API
-server.use(router); // Utilisez le router directement sans préfixe /api
+// Routes API
+server.use('/', router); // Utilisez le router à la racine
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Backend est en cours d'exécution sur http://localhost:${PORT}`);
+  console.log(`Serveur démarré sur http://localhost:${PORT}`);
 });
