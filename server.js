@@ -8,7 +8,7 @@ const middlewares = jsonServer.defaults({
 
 // Configuration CORS améliorée
 server.use(cors({
-  origin: ['https://mon-app-frontend-ncvp31iaz-bakeli.vercel.app/', 'http://localhost:5173'],
+  origin: '*', // Permettre temporairement toutes les origines
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
