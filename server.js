@@ -6,24 +6,23 @@ const middlewares = jsonServer.defaults({
   static: './'
 });
 
-// Configuration CORS mise à jour
+// Configuration CORS améliorée
 server.use(cors({
-  origin: ['https://mon-app-frontend.vercel.app', 'http://localhost:5173'],
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
   credentials: true,
   optionsSuccessStatus: 200
 }));
 
-server.use(middlewares);
-
-// Route de test pour vérifier que le serveur fonctionne
-server.get('/test', (req, res) => {
-  res.json({ message: 'Server is running' });
+// Route racine pour vérifier que le serveur fonctionne
+server.get('/', (req, res) => {
+  res.json({ message: 'API is running' });
 });
 
-// Montage du routeur JSON Server à la racine
-server.use('/', router);
+server.use(middlewares);
+server.use('/api', router); // Préfixe toutes les routes de l'API avec /api
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
