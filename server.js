@@ -6,23 +6,23 @@ const middlewares = jsonServer.defaults({
   static: './'
 });
 
-// Configuration CORS mise à jour avec le bon domaine Vercel
+// Configuration CORS mise à jour
 server.use(cors({
-  origin: ['https://mon-app-frontend-ncvp31iaz-bakeli.vercel.app', 'http://localhost:5173'],
+  origin: '*', // Temporairement autoriser tous les domaines pour tester
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
   optionsSuccessStatus: 200
 }));
 
+server.use(middlewares);
+server.use('/', router); // Assurez-vous que le routeur est monté à la racine
+
 // Middleware pour logger les requêtes
 server.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
-
-server.use(middlewares);
-server.use(router);
 
 const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => {
