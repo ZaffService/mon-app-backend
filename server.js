@@ -6,16 +6,10 @@ const middlewares = jsonServer.defaults({
   static: './'
 });
 
-// Middleware pour logger les requêtes avant CORS
-server.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
-
 // Configuration CORS mise à jour
 server.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  origin: ['https://mon-app-frontend.vercel.app', 'http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
   optionsSuccessStatus: 200
@@ -31,8 +25,7 @@ server.get('/test', (req, res) => {
 // Montage du routeur JSON Server à la racine
 server.use('/', router);
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Backend est en cours d'exécution sur http://localhost:${PORT}`);
-  console.log('Routes disponibles:', Object.keys(router.db.__wrapped__));
 });
