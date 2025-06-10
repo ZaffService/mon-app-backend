@@ -23,7 +23,7 @@ server.get('/', (req, res) => {
 });
 
 // Routes de l'API
-server.use('/api', router); // Ajout du préfixe /api
+server.use(router); // Utilisez le router directement sans préfixe /api
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
