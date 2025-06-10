@@ -1,47 +1,31 @@
 require('dotenv').config();
-const express = require('express');
 const jsonServer = require('json-server');
+const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const server = jsonServer.create();
 const router = jsonServer.router('db.json');
-
-// Configuration des limites de taille
-server.use(express.json({limit: process.env.MAX_PAYLOAD_SIZE}));
-server.use(express.urlencoded({
-    extended: true,
-    limit: process.env.MAX_PAYLOAD_SIZE
-}));
+const middlewares = jsonServer.defaults();
 
 // Configuration CORS
 server.use(cors({
-    origin: process.env.CORS_ORIGINS.split(','),
+    origin: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Middleware de logging et debug
-server.use((req, res, next) => {
-    if (req.method === 'PUT' && req.url.includes('/chats/')) {
-        console.log('PUT request payload:', req.body);
-    }
-    next();
-});
+// Configuration des limites
+server.use(express.json({limit: '50mb'}));
+server.use(express.urlencoded({limit: '50mb', extended: true}));
 
-// Gestion des erreurs
-server.use((error, req, res, next) => {
-    console.error('Erreur serveur:', error);
-    res.status(500).json({
-        error: 'Erreur serveur',
-        message: error.message
-    });
-});
+// Middlewares par défaut
+server.use(middlewares);
 
 // Routes
-server.use('/api', router);
+server.use('/', router);
 
-const PORT = process.env.PORT || 3000; // Changement de 5001 à 3000 pour Render
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`🚀 Server is running on port ${PORT}`);
 });
