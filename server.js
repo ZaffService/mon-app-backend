@@ -1,11 +1,14 @@
+const express = require('express');
 const jsonServer = require('json-server');
 const cors = require('cors');
+const morgan = require('morgan');
 const path = require('path');
 const compression = require('compression');
 const fs = require('fs');
 
-const server = jsonServer.create();
+const app = express();
 const dbPath = path.join(__dirname, 'db.json');
+const router = jsonServer.router(dbPath);
 
 // Vérifier si db.json existe, sinon le créer
 if (!fs.existsSync(dbPath)) {
@@ -17,25 +20,22 @@ if (!fs.existsSync(dbPath)) {
     }, null, 2));
 }
 
-const router = jsonServer.router(dbPath);
-const middlewares = jsonServer.defaults();
+// Logging
+app.use(morgan('dev'));
 
 // Configuration CORS optimisée
-const corsOptions = {
+app.use(cors({
     origin: ['https://mon-app-frontend.vercel.app', 'http://localhost:5173'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
-    optionsSuccessStatus: 200
-};
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-server.use(compression());
-server.use(cors(corsOptions));
-server.use(middlewares);
+app.use(compression());
 
 // Middleware de validation JSON
-server.use(jsonServer.bodyParser);
-server.use((err, req, res, next) => {
+app.use(jsonServer.bodyParser);
+app.use((err, req, res, next) => {
     if (err) {
         console.error('Erreur parsing JSON:', err);
         return res.status(400).json({ error: 'Invalid JSON format' });
@@ -44,12 +44,12 @@ server.use((err, req, res, next) => {
 });
 
 // Route de test/santé
-server.get('/health', (req, res) => {
+app.get('/health', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
 // Routes API avec validation
-server.get('/chats', (req, res) => {
+app.get('/chats', (req, res) => {
     try {
         const db = router.db;
         const chats = db.get('chats').value();
@@ -60,9 +60,10 @@ server.get('/chats', (req, res) => {
     }
 });
 
-server.use(router);
+app.use('/api', router);
 
+// Démarrer le serveur
 const PORT = process.env.PORT || 5001;
-server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
