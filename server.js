@@ -1,49 +1,47 @@
+require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const jsonServer = require('json-server');
-const path = require('path');
+const cors = require('cors');
 
-const app = express();
+const server = jsonServer.create();
 const router = jsonServer.router('db.json');
 
-// Configuration CORS correcte
-app.use(cors({
-    origin: ['https://mon-app-frontend.vercel.app', 'http://localhost:5173'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    optionsSuccessStatus: 200
+// Configuration des limites de taille
+server.use(express.json({limit: process.env.MAX_PAYLOAD_SIZE}));
+server.use(express.urlencoded({
+    extended: true,
+    limit: process.env.MAX_PAYLOAD_SIZE
 }));
 
-app.use(express.json());
+// Configuration CORS
+server.use(cors({
+    origin: process.env.CORS_ORIGINS.split(','),
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 
-// Routes API avec gestion d'erreur
-app.get('/chats', async (req, res) => {
-    try {
-        const chats = router.db.get('chats').value();
-        res.json(Array.isArray(chats) ? chats : []);
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+// Middleware de logging et debug
+server.use((req, res, next) => {
+    if (req.method === 'PUT' && req.url.includes('/chats/')) {
+        console.log('PUT request payload:', req.body);
     }
+    next();
 });
 
-app.get('/chats/:id', async (req, res) => {
-    try {
-        const chat = router.db.get('chats').find({ id: req.params.id }).value();
-        if (!chat) {
-            return res.status(404).json({ error: 'Chat not found' });
-        }
-        res.json(chat);
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
+// Gestion des erreurs
+server.use((error, req, res, next) => {
+    console.error('Erreur serveur:', error);
+    res.status(500).json({
+        error: 'Erreur serveur',
+        message: error.message
+    });
 });
 
-app.use('/api', router);
+// Routes
+server.use('/api', router);
 
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3000; // Changement de 5001 à 3000 pour Render
+server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
