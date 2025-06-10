@@ -33,10 +33,46 @@ if (!db.has('chats').value()) {
     db.set('chats', []).write();
 }
 
-// Routes API
+// Routes API améliorées
 server.get('/chats', (req, res) => {
-    const chats = router.db.get('chats').value();
-    res.json(chats || []);
+    try {
+        const chats = router.db.get('chats').value();
+        res.json(chats || []);
+    } catch (error) {
+        console.error('Error fetching chats:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+server.post('/chats', (req, res) => {
+    try {
+        const newMessage = req.body;
+        const chats = router.db.get('chats');
+        
+        // Ajouter le nouveau message
+        const result = chats.push(newMessage).write();
+        
+        // Émettre un événement pour la mise à jour en temps réel
+        res.json(result);
+    } catch (error) {
+        console.error('Error adding message:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Route pour récupérer les messages d'un chat spécifique
+server.get('/chats/:chatId', (req, res) => {
+    try {
+        const { chatId } = req.params;
+        const chat = router.db.get('chats')
+            .find({ id: chatId })
+            .value();
+            
+        res.json(chat || { messages: [] });
+    } catch (error) {
+        console.error('Error fetching chat:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 // Gestion des fichiers audio
