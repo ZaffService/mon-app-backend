@@ -3,12 +3,16 @@ const cors = require('cors');
 const server = jsonServer.create();
 const router = jsonServer.router('db.json');
 const middlewares = jsonServer.defaults({
-  static: '../'  // Permet d'accéder aux fichiers depuis la racine du projet
+  static: '../'
 });
 
-// Configuration CORS
+// Configuration CORS mise à jour
 server.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://mon-app-frontend.vercel.app'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -17,7 +21,7 @@ server.use(cors({
 server.use(middlewares);
 server.use(router);
 
-const PORT = 5001;
+const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => {
   console.log(`Backend est en cours d'exécution sur http://localhost:${PORT}`);
 });
