@@ -2,9 +2,22 @@ const jsonServer = require('json-server');
 const cors = require('cors');
 const path = require('path');
 const compression = require('compression');
+const fs = require('fs');
 
 const server = jsonServer.create();
-const router = jsonServer.router(path.join(__dirname, 'db.json'));
+const dbPath = path.join(__dirname, 'db.json');
+
+// Vérifier si db.json existe, sinon le créer
+if (!fs.existsSync(dbPath)) {
+    fs.writeFileSync(dbPath, JSON.stringify({
+        "chats": [],
+        "notifications": [],
+        "calls": [],
+        "status": []
+    }, null, 2));
+}
+
+const router = jsonServer.router(dbPath);
 const middlewares = jsonServer.defaults();
 
 // Configuration CORS optimisée
@@ -16,28 +29,38 @@ const corsOptions = {
     optionsSuccessStatus: 200
 };
 
-// Middleware personnalisé pour les en-têtes CORS
-server.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
+server.use(compression());
+server.use(cors(corsOptions));
+server.use(middlewares);
+
+// Middleware de validation JSON
+server.use(jsonServer.bodyParser);
+server.use((err, req, res, next) => {
+    if (err) {
+        console.error('Erreur parsing JSON:', err);
+        return res.status(400).json({ error: 'Invalid JSON format' });
     }
     next();
 });
 
-server.use(compression());
-server.use(cors(corsOptions));
-server.use(middlewares);
-server.use(jsonServer.bodyParser);
-
-// Route de test pour vérifier la connexion
-server.get('/test', (req, res) => {
-    res.json({ status: 'ok' });
+// Route de test/santé
+server.get('/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-// Routes principales
-server.use('/api', router);
+// Routes API avec validation
+server.get('/chats', (req, res) => {
+    try {
+        const db = router.db;
+        const chats = db.get('chats').value();
+        res.json(Array.isArray(chats) ? chats : []);
+    } catch (error) {
+        console.error('Error fetching chats:', error);
+        res.status(500).json([]);
+    }
+});
+
+server.use(router);
 
 const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => {
