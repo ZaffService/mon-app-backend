@@ -8,9 +8,10 @@ const middlewares = jsonServer.defaults({
 
 // Configuration CORS améliorée
 server.use(cors({
-  origin: ['https://mon-app-frontend.vercel.app', 'http://localhost:5173'],
+  origin: ['https://mon-app-frontend-ncvp31iaz-bakeli.vercel.app/', 'http://localhost:5173'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
   credentials: true,
   optionsSuccessStatus: 200
 }));
@@ -21,20 +22,27 @@ server.use((req, res, next) => {
   next();
 });
 
+// Middleware json-server
+server.use(middlewares);
+
 // Route racine
 server.get('/', (req, res) => {
   res.json({ message: 'API is running' });
 });
 
-server.use(middlewares);
-
 // Routes API
 server.use('/api', router);
 
-// Route explicite pour les chats
+// Route explicite pour les chats avec gestion d'erreur
 server.get('/api/chats', (req, res) => {
-  const db = router.db;
-  res.json(db.get('chats').value() || []);
+  try {
+    const db = router.db;
+    const chats = db.get('chats').value() || [];
+    res.json(chats);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des chats:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
