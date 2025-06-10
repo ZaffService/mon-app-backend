@@ -11,10 +11,15 @@ server.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
   credentials: true,
   optionsSuccessStatus: 200
 }));
+
+// Middleware pour logger les requêtes
+server.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
 
 // Route racine pour vérifier que le serveur fonctionne
 server.get('/', (req, res) => {
@@ -23,6 +28,12 @@ server.get('/', (req, res) => {
 
 server.use(middlewares);
 server.use('/api', router); // Préfixe toutes les routes de l'API avec /api
+
+// Route pour les chats
+server.get('/chats', (req, res) => {
+  const db = router.db;
+  res.json(db.get('chats').value() || []);
+});
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
