@@ -8,4 +8,14 @@ services:
       - key: PORT
         value: 3000
       - key: NODE_ENV
+        value: productionservices:
+  - type: web
+    name: mon-app-backend-1
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
         value: production

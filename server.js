@@ -9,6 +9,9 @@ const middlewares = jsonServer.defaults();
 // Middlewares
 server.use(middlewares);
 
+// Configuration des limites
+server.use(jsonServer.bodyParser);
+
 // Configuration CORS
 server.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -17,17 +20,14 @@ server.use((req, res, next) => {
     next();
 });
 
-// Routes
-server.use('/', router); // Notez le changement ici : de '/api' à '/'
-
-// Gestion des erreurs
-server.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        error: 'Erreur serveur',
-        message: err.message
-    });
+// Logging middleware
+server.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
 });
+
+// Routes - Montage direct du router json-server
+server.use('/', router);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
