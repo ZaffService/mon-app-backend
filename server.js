@@ -9,7 +9,7 @@ const middlewares = jsonServer.defaults();
 // Middlewares
 server.use(middlewares);
 
-// Configuration CORS personnalisée
+// Configuration CORS
 server.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -17,19 +17,8 @@ server.use((req, res, next) => {
     next();
 });
 
-// Configuration des limites de taille
-server.use(jsonServer.bodyParser);
-server.use((req, res, next) => {
-    if (req.method === 'POST' || req.method === 'PUT') {
-        if (req.body && Object.keys(req.body).length > 0) {
-            console.log(`${req.method} request body:`, req.body);
-        }
-    }
-    next();
-});
-
 // Routes
-server.use('/api', router);
+server.use('/', router); // Notez le changement ici : de '/api' à '/'
 
 // Gestion des erreurs
 server.use((err, req, res, next) => {
@@ -43,4 +32,5 @@ server.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+    console.log(`📁 Base de données chargée depuis ${path.join(__dirname, 'db.json')}`);
 });
